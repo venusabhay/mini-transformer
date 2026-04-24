@@ -44,6 +44,14 @@ cd src
 python generate.py
 ```
 
+## How It Works
+
+**Training flow:**
+data.txt → tokenizer → numbers → model → loss → update weights
+
+**Generation flow:**
+text → tokenizer → model → probabilities → new text
+
 ## Goal
 
 This project is for learning how models like GPT work internally.

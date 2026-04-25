@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 from model import MiniTransformer
 from tokenizer import CharTokenizer
 from utils import get_batch
@@ -20,9 +21,10 @@ model = MiniTransformer(tokenizer.vocab_size)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 loss_fn = nn.CrossEntropyLoss()
 
-block_size = 8
+block_size = 64
+losses = []
 
-for step in range(500):
+for step in range(5000):
     xb, yb = get_batch(data, block_size)
 
     logits = model(xb)
@@ -36,10 +38,25 @@ for step in range(500):
     loss.backward()
     optimizer.step()
 
+    losses.append(loss.item())
+
     if step % 100 == 0:
         print("step:", step, "loss:", loss.item())
 
-# save model
+    if step % 1000 == 0:
+        checkpoint_dir = os.path.join(BASE_DIR, "outputs", "checkpoints")
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        torch.save(model.state_dict(), os.path.join(checkpoint_dir, f"model_{step}.pt"))
+
+# plot loss
+plt.plot(losses)
+plt.xlabel("Step")
+plt.ylabel("Loss")
+plt.title("Training Loss")
+plt.savefig(os.path.join(BASE_DIR, "outputs", "loss.png"))
+plt.close()
+
+# save final model
 checkpoint_dir = os.path.join(BASE_DIR, "outputs", "checkpoints")
 os.makedirs(checkpoint_dir, exist_ok=True)
 torch.save(model.state_dict(), os.path.join(checkpoint_dir, "model.pt"))
